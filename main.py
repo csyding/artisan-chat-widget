@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from typing import List
+from typing import List, Optional
 from pydantic import BaseModel
 app = FastAPI()
 
@@ -14,7 +14,7 @@ app.add_middleware(
 )
 
 class Message(BaseModel):
-    id: int
+    id: Optional[int] = None
     content: str
 
 messages: List[Message] = []
@@ -27,13 +27,17 @@ def root():
 
 @app.get("/api/messages")
 def get_messages():
-    str_messages = " ".join(messages)
+    str_messages = ""
+    for m in messages:
+        str_messages += "id: " + str(m.id) + " content: " + m.content + "\n"
     data = {"message": "Hello World"}
     return JSONResponse(content=str_messages)
 
 @app.post("/api/messages")
-def send_message(content: str):
-    new_message = Message(id=m_id_counter, content=content)
+def send_message(content: Message):
+    global m_id_counter
+    print("this is the content", content)
+    new_message = Message(id=m_id_counter, content=content.content)
     messages.append(new_message)
     m_id_counter += 1
     data = {"message": "Message successfully sent"}
