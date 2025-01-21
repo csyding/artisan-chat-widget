@@ -27,11 +27,7 @@ def root():
 
 @app.get("/api/messages")
 def get_messages():
-    str_messages = ""
-    for m in messages:
-        str_messages += "id: " + str(m.id) + " content: " + m.content + "\n"
-    data = {"message": "Hello World"}
-    return JSONResponse(content=str_messages)
+    return messages
 
 @app.post("/api/messages")
 def send_message(content: Message):
@@ -40,8 +36,8 @@ def send_message(content: Message):
     new_message = Message(id=m_id_counter, content=content.content)
     messages.append(new_message)
     m_id_counter += 1
-    data = {"message": "Message successfully sent"}
-    return JSONResponse(content=data)
+    print(type(messages))
+    return content
 
 @app.delete("/api/messages/{m_id}")
 def delete_message(m_id: int):

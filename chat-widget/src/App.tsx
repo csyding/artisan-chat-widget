@@ -55,11 +55,11 @@ const App: React.FC = () => {
         <button onClick={sendMessage}>Send</button>
       </div>
       <div>
-        {messages.map((msg) => (
+        {messages ? messages.map((msg) => (
           <div key={msg.id} style={{ margin: "10px 0" }}>
             {msg.content}
           </div>
-        ))}
+        )) : "Loading..."}
       </div>
     </div>
   );
