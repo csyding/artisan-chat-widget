@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from typing import List
+from pydantic import BaseModel
 app = FastAPI()
 
 app.add_middleware(
@@ -11,28 +13,45 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+class Message(BaseModel):
+    id: int
+    content: str
+
+messages: List[Message] = []
+m_id_counter = 1
+
 @app.get("/")
 def root():
     data = {"message": "Hello World"}
     return JSONResponse(content=data)
 
-@app.get("/api/message")
-def root():
+@app.get("/api/messages")
+def get_messages():
+    str_messages = " ".join(messages)
     data = {"message": "Hello World"}
-    return JSONResponse(content=data)
+    return JSONResponse(content=str_messages)
 
-@app.post("/api/message")
-def send_message():
+@app.post("/api/messages")
+def send_message(content: str):
+    new_message = Message(id=m_id_counter, content=content)
+    messages.append(new_message)
+    m_id_counter += 1
     data = {"message": "Message successfully sent"}
     return JSONResponse(content=data)
 
-@app.delete("/api/message")
-def delete_message():
+@app.delete("/api/messages/{m_id}")
+def delete_message(m_id: int):
+    for m in messages:
+        if m.id == m_id:
+            messages.remove(m)
     data = {"message": "Successfully deleted message"}
     return JSONResponse(content=data)
 
-@app.put("/api/message")
-def edit_message():
+@app.put("/api/messages{m_id}")
+def edit_message(m_id: int, new_content: str):
+    for m in messages:
+        if m.id == m_id:
+            m.content = new_content
     data = {"message": "Edited message"}
     return JSONResponse(content=data)
 
