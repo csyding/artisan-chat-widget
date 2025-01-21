@@ -2,7 +2,7 @@ import React from 'react';
 import Message from './Message.tsx';
 
 interface DisplayMessageProps {
-    messages: { id: number; content: string }[];
+    messages: { id: number; content: string, sender: string }[];
     onEdit: (id: number) => void;
     onDelete: (id: number) => void;
 }

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 interface SendEditMessageProps {
     onSubmit: (content: string) => void;
-    messageToEdit?: { id: number; content: string };
+    messageToEdit?: { id: number; content: string, sender: string };
 }
 
 const SendEditMessage: React.FC<SendEditMessageProps> = ({messageToEdit, onSubmit}) => {

@@ -6,12 +6,12 @@ import DisplayMessage from './components/DisplayMessage.tsx';
 interface Message {
     id: number;
     content: string;
+    sender: string;
 }
 
 const App: React.FC = () => {
     const [messages, setMessages] = useState<Message[]>([]);
     const [editingMessage, setEditingMessage] = useState<Message | null>(null);
-    const [deletingMessage, setDeletingMessage] = useState<Message | null>(null);
 
     useEffect(() => {
         fetch('http://localhost:8000/api/messages')
@@ -24,10 +24,10 @@ const App: React.FC = () => {
         fetch('http://localhost:8000/api/messages', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ content }),
+            body: JSON.stringify({ content: content, sender: "user" }),
         })
             .then((res) => res.json())
-            .then((newMessage) => setMessages((prev) => [...prev, newMessage]))
+            .then((newMessages) => setMessages((prev) => [...prev, ...newMessages]))
             .catch((err) => console.error('Error sending message:', err));
     };
 
@@ -43,7 +43,7 @@ const App: React.FC = () => {
             fetch(`http://localhost:8000/api/messages/${editingMessage.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ content: newContent }),
+                body: JSON.stringify({ content: newContent, sender: "user" }),
             })
                 .then((data) => {
                     console.log("the data coming in", data)
