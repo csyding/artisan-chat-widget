@@ -27,6 +27,7 @@ def root():
 
 @app.get("/api/messages")
 def get_messages():
+    print("fetched msgs", messages)
     return messages
 
 @app.post("/api/messages")
@@ -37,7 +38,7 @@ def send_message(content: Message):
     messages.append(new_message)
     m_id_counter += 1
     print(type(messages))
-    return content
+    return new_message
 
 @app.delete("/api/messages/{m_id}")
 def delete_message(m_id: int):
@@ -47,13 +48,14 @@ def delete_message(m_id: int):
     data = {"message": "Successfully deleted message"}
     return JSONResponse(content=data)
 
-@app.put("/api/messages{m_id}")
-def edit_message(m_id: int, new_content: str):
+@app.put("/api/messages/{m_id}")
+def edit_message(m_id: int, message: Message):
+    print(m_id, message)
     for m in messages:
         if m.id == m_id:
-            m.content = new_content
-    data = {"message": "Edited message"}
-    return JSONResponse(content=data)
+            m.content = message.content
+        return {"message": "Edited message"}
+    return JSONResponse({"message": "Message not found"}, status_code=404)
 
 if __name__ == '__main__':
     app.run(debug=True)

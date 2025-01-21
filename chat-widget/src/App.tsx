@@ -1,5 +1,7 @@
 import './App.css';
 import React, { useState, useEffect } from 'react';
+import SendEditMessage from './components/SendEditMessage.tsx';
+import DisplayMessage from './components/DisplayMessage.tsx';
 
 interface Message {
     id: number;
@@ -8,62 +10,69 @@ interface Message {
 
 const App: React.FC = () => {
     const [messages, setMessages] = useState<Message[]>([]);
-    const [input, setInput] = useState<string>("");
+    const [editingMessage, setEditingMessage] = useState<Message | null>(null);
 
     useEffect(() => {
         fetch('http://localhost:8000/api/messages')
-          .then(response => {
-            console.log("Response status:", response.status);
-            if (!response.ok) {
-              throw new Error(`HTTPError! status: ${response.status}`);
-            }
-            return response.json();
-          })
-          .then(messages => {
-            console.log("Fetched messages:", messages); // Log fetched data
-            setMessages(messages); // Ensure this matches the data structure
-          })
-          .catch(error => console.error('Error fetching data:', error));
-      }, []);
+            .then((response) => response.json())
+            .then((messages) => setMessages(messages))
+            .catch((error) => console.error('Error fetching data:', error));
+    }, []);
 
-    const sendMessage = () => {
-        console.log("this is the input", input)
-        fetch("http://localhost:8000/api/messages", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ content: input }),
+    const sendMessage = (content: string) => {
+        fetch('http://localhost:8000/api/messages', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content }),
         })
-          .then((res) => res.json())
-          .then((newMessage) => {
-            console.log("New message:", newMessage); // Log the new message
-            setMessages((prev) => [...prev, newMessage]); // Update state
-            setInput("");
-          })
-          .catch((err) => console.error("Error sending message:", err));
+            .then((res) => res.json())
+            .then((newMessage) => setMessages((prev) => [...prev, newMessage]))
+            .catch((err) => console.error('Error sending message:', err));
     };
-      
+
+    const editMessage = (id: number) => {
+        const messageToEdit = messages.find((msg) => msg.id === id);
+        if (messageToEdit) {
+            setEditingMessage(messageToEdit);
+        }
+    };
+
+    const saveEditedMessage = (newContent: string) => {
+        if (editingMessage) {
+            fetch(`http://localhost:8000/api/messages/${editingMessage.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content: newContent }),
+            })
+                .then((data) => {
+                    console.log("the data coming in", data)
+                    if (!data.ok) {
+                        console.log("This data isn't okay")
+                    }
+                    return data
+                })
+                .then((res) => res.json())
+                .then((updatedMessage) => {
+                    setMessages(messages.map((msg) => (msg.id === updatedMessage.id ? updatedMessage : msg)));
+                    setEditingMessage(null);
+                })
+                .catch((err) => console.error('Error editing message:', err));
+            fetch('http://localhost:8000/api/messages')
+                .then((response) => response.json())
+                .then((messages) => setMessages(messages))
+                .catch((error) => console.error('Error fetching data:', error));
+        }
+    };
 
     return (
-     <div>
-      <div>
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Type a message"
-        />
-        <button onClick={sendMessage}>Send</button>
-      </div>
-      <div>
-        {messages ? messages.map((msg) => (
-          <div key={msg.id} style={{ margin: "10px 0" }}>
-            {msg.content}
-          </div>
-        )) : "Loading..."}
-      </div>
-    </div>
-  );
-}
-
+        <div>
+            <DisplayMessage messages={messages} onEdit={editMessage} />
+            <SendEditMessage
+                onSubmit={editingMessage ? saveEditedMessage : sendMessage}
+                messageToEdit={editingMessage || undefined}
+            />
+        </div>
+    );
+};
 
 export default App;
