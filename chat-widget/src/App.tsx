@@ -73,7 +73,7 @@ const App: React.FC = () => {
                 headers: { 'Content-Type': 'application/json' },
             })
                 .then((res) => res.json())
-                .catch((err) => console.error('Error deelting:', err));
+                .catch((err) => console.error('Error deleting:', err));
             fetch('http://localhost:8000/api/messages')
                 .then((response) => response.json())
                 .then((messages) => setMessages(messages))
