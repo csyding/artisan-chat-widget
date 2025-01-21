@@ -11,6 +11,7 @@ interface Message {
 const App: React.FC = () => {
     const [messages, setMessages] = useState<Message[]>([]);
     const [editingMessage, setEditingMessage] = useState<Message | null>(null);
+    const [deletingMessage, setDeletingMessage] = useState<Message | null>(null);
 
     useEffect(() => {
         fetch('http://localhost:8000/api/messages')
@@ -64,9 +65,26 @@ const App: React.FC = () => {
         }
     };
 
+    const deleteMessage = (id: number) => {
+        const messageToDelete = messages.find((msg) => msg.id === id);
+        if (messageToDelete != null) {
+            fetch(`http://localhost:8000/api/messages/${messageToDelete.id}`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+            })
+                .then((res) => res.json())
+                .catch((err) => console.error('Error deelting:', err));
+            fetch('http://localhost:8000/api/messages')
+                .then((response) => response.json())
+                .then((messages) => setMessages(messages))
+                .catch((error) => console.error('Error fetching data:', error));
+        }
+
+    };
+
     return (
         <div>
-            <DisplayMessage messages={messages} onEdit={editMessage} />
+            <DisplayMessage messages={messages} onEdit={editMessage} onDelete={deleteMessage} />
             <SendEditMessage
                 onSubmit={editingMessage ? saveEditedMessage : sendMessage}
                 messageToEdit={editingMessage || undefined}
